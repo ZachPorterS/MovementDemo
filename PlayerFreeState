@@ -1,0 +1,19 @@
+///@desc The players main state where they have complete control
+function PlayerFreeState() {
+	/* Call all required functions for movement, animation, ect. */
+	CalculateMovement();
+	PlayerCollisons();
+	PlayerJump();
+	PlayerAnimator();
+	/* Switch the player states on input commands */
+	mask_index = normalMask;
+	if (keyRoll && grounded) {
+		dir = image_xscale;
+		state = PlayerRollState;
+		moveDistanceRemaining = rollDistance;
+	}
+	if (keyCrouch && grounded && vSpd == 0) {
+		mask_index = crouchMask;	
+		state = PlayerCrouchState;
+	}
+}
