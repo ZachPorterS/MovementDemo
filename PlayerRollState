@@ -1,0 +1,19 @@
+///@desc The players roll state
+function PlayerRollState(){
+	CalculateMovement();
+	moveDistanceRemaining = max(0, moveDistanceRemaining - rSpd);
+	var _collided = PlayerCollisons();
+	/* Update the sprite to the rolling sprite 
+	 * for the duration of the roll and from for 
+	 * the total amount of frames in he animation*/
+	sprite_index = rollSprite;
+	var _totalFrames = sprite_get_number(sprite_index);
+	image_index = _totalFrames + ((1 - (moveDistanceRemaining / rollDistance)) * _totalFrames);
+	
+	PlayerCollisons();
+	
+	/* Change state back to free state */
+	if (moveDistanceRemaining <= 0) {
+		state = PlayerFreeState;
+	}
+}
