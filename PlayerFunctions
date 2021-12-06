@@ -1,0 +1,92 @@
+///@desc File to hold all player functions
+
+function CalculateMovement() {
+	/* Calculate very simple movement */
+	var _movement = (keyRight - keyLeft) * mSpd;
+	if (state != PlayerRollState) hSpd = _movement;
+	else hSpd = rSpd * dir;
+	vSpd += grav;
+	
+	/* Apply fractions on update of frame */
+	hSpd += hSpdFraction;
+	vSpd += vSpdFraction;
+	
+	/* Store the fractions of h/vSpd to work with whole numbers 
+	 * avoiding issues with sprite bouncing on platforms and other 
+	 * wonky things. */
+	hSpdFraction = hSpd - (floor(abs(hSpd)) * sign(hSpd));
+	vSpdFraction = vSpd - (floor(abs(vSpd)) * sign(vSpd));
+	hSpd -= hSpdFraction;
+	vSpd -= vSpdFraction;
+}
+function PlayerCollisons() {	
+	var _boxSide;
+	var _collision = false;
+	/* Check the pixel at the right/left bottom/top for a collision
+	 * if that returns true set _collision to true for screen shake 
+	 * on roll; set movement to zero while colliding with a wall */
+	if (hSpd > 0) _boxSide = bbox_right; else _boxSide = bbox_left;
+	if (tilemap_get_at_pixel(tilemap, _boxSide + hSpd, bbox_top) != 0
+	|| tilemap_get_at_pixel(tilemap, _boxSide + hSpd, bbox_bottom) != 0) {
+		if (hSpd > 0) x = x - (x % TILE_SIZE) + (TILE_SIZE- 1) - (bbox_right - x);
+		else x = x - (x % TILE_SIZE) - (bbox_left - x);
+		_collision = true;
+		hSpd = 0;
+	}
+	/* Commit to movement */
+	x += hSpd;
+	
+	/* Check the pixel at the right/left bottom/top for a collision
+	 * if this returns true set vertical speed to zero */
+	if (vSpd >= 0) _boxSide = bbox_bottom; else _boxSide = bbox_top;
+	if (tilemap_get_at_pixel(tilemap, bbox_left, _boxSide + vSpd) != 0
+	|| tilemap_get_at_pixel(tilemap, bbox_right, _boxSide + vSpd) != 0) {
+		if (vSpd >= 0) { 
+			y = y - (y % TILE_SIZE) + (TILE_SIZE - 1) - (bbox_bottom - y);
+			grounded = true;
+		} else {
+			y -= _boxSide - y;
+			grounded = false;
+		}
+		vSpd = 0;
+	}
+	/* Commit to movement */
+	y += vSpd;
+	
+	return _collision;
+}
+	
+function PlayerJump() {
+	/* Check if the player is grounded, if not grounded
+	 * count down the buffer to give time to jump running 
+	 * off a ledge. */
+	if (!grounded) {
+		if (edgeBuffer > 0) {
+			edgeBuffer -= 1;
+			if (!jumped && keyJump) {
+				vSpd -= jSpd;
+				jumped = true;
+				grounded = false;
+			}
+		}
+	} else {
+		jumped = false;
+		edgeBuffer = edgeBufferMax;
+	}
+	
+	/* Set the buffer to max value when player jumps, 
+	 * allowing for smoother jumping. */
+	 if (keyJump) jumpBuffer = jumpBufferMax;
+	 if (jumpBuffer > 0) {
+		jumpBuffer -= 1;
+		if (grounded) {
+			vSpd -= jSpd;
+			jumpBuffer = 0;
+			jumped = true;
+			grounded = false;
+		}
+	 }
+	 
+	 /* Variable jump height */
+	 if (vSpd < 0 && !keyJumpHeld) vSpd = vSpd / 2;
+}
