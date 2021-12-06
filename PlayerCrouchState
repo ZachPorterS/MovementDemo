@@ -1,0 +1,22 @@
+///@ Player's crouch state
+function PlayerCrouchState(){
+	/* Set sprite for crouching */
+	sprite_index = sPlayerCrouch;
+	if (!keyCrouch) {
+		mask_index = normalMask;
+		state = PlayerFreeState;	
+	}
+	if (keyJump) {
+		mask_index = normalMask;
+		state = PlayerFreeState;
+		grounded = false;
+		vSpd -= jSpd;
+	}
+	if (keyRoll) {
+		state = PlayerFreeState;
+		dir = image_xscale;
+		state = PlayerRollState;
+		moveDistanceRemaining = rollDistance;
+	}
+	if (vSpd != 0) state = PlayerFreeState;
+}
